@@ -38,7 +38,13 @@ $result = $conn->query("SELECT r.*, u.telefono FROM recargas r JOIN users u ON r
 $recargas_pendientes = $result->fetch_all(MYSQLI_ASSOC);
 
 // Retiros pendientes
-$result = $conn->query("SELECT r.*, u.telefono, u.nombre_titular FROM retiros r JOIN users u ON r.usuario_id = u.id WHERE r.estado = 'pendiente' ORDER BY r.fecha_solicitud DESC LIMIT 10");
+$result = $conn->query("SELECT r.*, u.telefono, cb.nombre_titular 
+                        FROM retiros r 
+                        JOIN users u ON r.usuario_id = u.id 
+                        LEFT JOIN cuenta_bancaria cb ON u.id = cb.usuario_id 
+                        WHERE r.estado = 'pendiente' 
+                        ORDER BY r.fecha_solicitud DESC 
+                        LIMIT 10");
 $retiros_pendientes = $result->fetch_all(MYSQLI_ASSOC);
 
 closeConnection($conn);

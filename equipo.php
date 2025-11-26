@@ -20,8 +20,8 @@ $stats_nivel = [];
 for ($nivel = 1; $nivel <= 3; $nivel++) {
     // Contar miembros por nivel
     $stmt = $conn->prepare("SELECT COUNT(*) as total_miembros 
-                           FROM equipos 
-                           WHERE usuario_padre_id = ? AND nivel = ?");
+                           FROM equipo 
+                           WHERE usuario_id = ? AND nivel = ?");
     $stmt->bind_param("ii", $user_id, $nivel);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -30,9 +30,9 @@ for ($nivel = 1; $nivel <= 3; $nivel++) {
     
     // Calcular contribución total (inversiones) por nivel
     $stmt = $conn->prepare("SELECT COALESCE(SUM(u.saldo_invertido), 0) as contribucion
-                           FROM equipos e
-                           JOIN users u ON e.usuario_referido_id = u.id
-                           WHERE e.usuario_padre_id = ? AND e.nivel = ?");
+                           FROM equipo e
+                           JOIN users u ON e.referido_id = u.id
+                           WHERE e.usuario_id = ? AND e.nivel = ?");
     $stmt->bind_param("ii", $user_id, $nivel);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -62,27 +62,38 @@ for ($nivel = 1; $nivel <= 3; $nivel++) {
 
 // Obtener inversión total del equipo nivel 1
 $stmt = $conn->prepare("SELECT COALESCE(SUM(u.saldo_invertido), 0) as inversion_total
-                       FROM equipos e
-                       JOIN users u ON e.usuario_referido_id = u.id
-                       WHERE e.usuario_padre_id = ? AND e.nivel = 1");
+                       FROM equipo e
+                       JOIN users u ON e.referido_id = u.id
+                       WHERE e.usuario_id = ? AND e.nivel = 1");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $inversion_total_nivel1 = $result->fetch_assoc()['inversion_total'];
 $stmt->close();
 
-// Obtener recompensas disponibles
-$stmt = $conn->prepare("SELECT r.*, 
-                       COALESCE(rec.fecha_recibido, NULL) as fecha_recibido,
-                       CASE WHEN rec.id IS NOT NULL THEN 1 ELSE 0 END as recibida
-                       FROM recompensas_equipo r
-                       LEFT JOIN recompensas_recibidas rec ON r.id = rec.recompensa_id AND rec.usuario_id = ?
-                       WHERE r.estado = 'activo'
-                       ORDER BY r.nivel ASC");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$recompensas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
+// Obtener recompensas disponibles (si la tabla existe)
+$recompensas = [];
+try {
+    // Verificar si la tabla existe
+    $check_table = $conn->query("SHOW TABLES LIKE 'recompensas_equipo'");
+    if ($check_table && $check_table->num_rows > 0) {
+        $stmt = $conn->prepare("SELECT r.*, 
+                               COALESCE(rec.fecha_recibido, NULL) as fecha_recibido,
+                               CASE WHEN rec.id IS NOT NULL THEN 1 ELSE 0 END as recibida
+                               FROM recompensas_equipo r
+                               LEFT JOIN recompensas_recibidas rec ON r.id = rec.recompensa_id AND rec.usuario_id = ?
+                               WHERE r.estado = 'activo'
+                               ORDER BY r.nivel ASC");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $recompensas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+    }
+    if ($check_table) $check_table->close();
+} catch (Exception $e) {
+    // Si la tabla no existe, dejar recompensas vacío
+    $recompensas = [];
+}
 
 closeConnection($conn);
 ?>

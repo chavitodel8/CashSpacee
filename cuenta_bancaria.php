@@ -13,17 +13,18 @@ $user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 // Obtener información bancaria del usuario (si existe)
-$stmt = $conn->prepare("SELECT nombre_titular, cuenta_bancaria, tipo_cartera FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT nombre_titular, numero_cuenta, tipo_cuenta, banco FROM cuenta_bancaria WHERE usuario_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $bank_info = $result->fetch_assoc();
 $stmt->close();
 
-// Si no existe información bancaria, dejar vacío (no usar datos del perfil)
+// Si no existe información bancaria, dejar vacío
 $nombre_titular = $bank_info['nombre_titular'] ?? '';
-$cuenta_bancaria = $bank_info['cuenta_bancaria'] ?? '';
-$tipo_cartera = $bank_info['tipo_cartera'] ?? null;
+$cuenta_bancaria = $bank_info['numero_cuenta'] ?? '';
+$tipo_cartera = $bank_info['tipo_cuenta'] ?? null;
+$banco = $bank_info['banco'] ?? null;
 
 closeConnection($conn);
 ?>
