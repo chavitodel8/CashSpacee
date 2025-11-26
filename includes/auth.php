@@ -66,42 +66,42 @@ function registerUser($telefono, $password, $codigo_invitacion = null) {
         $stmt->execute();
         $stmt->close();
         
-        // Si hay un usuario padre, crear registros en la tabla equipos para los niveles
+        // Si hay un usuario padre, crear registros en la tabla equipo para los niveles
         if ($usuario_padre_id) {
             // Nivel 1: El usuario que invitó directamente
-            $stmt_equipo1 = $conn->prepare("INSERT INTO equipos (usuario_padre_id, usuario_referido_id, nivel) VALUES (?, ?, 1)");
+            $stmt_equipo1 = $conn->prepare("INSERT INTO equipo (usuario_id, referido_id, nivel) VALUES (?, ?, 1)");
             $stmt_equipo1->bind_param("ii", $usuario_padre_id, $user_id);
             $stmt_equipo1->execute();
             $stmt_equipo1->close();
             
             // Nivel 2: Obtener el usuario padre del nivel 1
-            $stmt_padre2 = $conn->prepare("SELECT DISTINCT e1.usuario_padre_id 
-                                          FROM equipos e1 
-                                          WHERE e1.usuario_referido_id = ? AND e1.nivel = 1 
+            $stmt_padre2 = $conn->prepare("SELECT DISTINCT e1.usuario_id 
+                                          FROM equipo e1 
+                                          WHERE e1.referido_id = ? AND e1.nivel = 1 
                                           LIMIT 1");
             $stmt_padre2->bind_param("i", $usuario_padre_id);
             $stmt_padre2->execute();
             $result_padre2 = $stmt_padre2->get_result();
             if ($result_padre2->num_rows > 0) {
                 $padre2 = $result_padre2->fetch_assoc();
-                $padre2_id = $padre2['usuario_padre_id'];
-                $stmt_equipo2 = $conn->prepare("INSERT INTO equipos (usuario_padre_id, usuario_referido_id, nivel) VALUES (?, ?, 2)");
+                $padre2_id = $padre2['usuario_id'];
+                $stmt_equipo2 = $conn->prepare("INSERT INTO equipo (usuario_id, referido_id, nivel) VALUES (?, ?, 2)");
                 $stmt_equipo2->bind_param("ii", $padre2_id, $user_id);
                 $stmt_equipo2->execute();
                 $stmt_equipo2->close();
                 
                 // Nivel 3: Obtener el usuario padre del nivel 2
-                $stmt_padre3 = $conn->prepare("SELECT DISTINCT e2.usuario_padre_id 
-                                              FROM equipos e2 
-                                              WHERE e2.usuario_referido_id = ? AND e2.nivel = 1 
+                $stmt_padre3 = $conn->prepare("SELECT DISTINCT e2.usuario_id 
+                                              FROM equipo e2 
+                                              WHERE e2.referido_id = ? AND e2.nivel = 1 
                                               LIMIT 1");
                 $stmt_padre3->bind_param("i", $padre2_id);
                 $stmt_padre3->execute();
                 $result_padre3 = $stmt_padre3->get_result();
                 if ($result_padre3->num_rows > 0) {
                     $padre3 = $result_padre3->fetch_assoc();
-                    $padre3_id = $padre3['usuario_padre_id'];
-                    $stmt_equipo3 = $conn->prepare("INSERT INTO equipos (usuario_padre_id, usuario_referido_id, nivel) VALUES (?, ?, 3)");
+                    $padre3_id = $padre3['usuario_id'];
+                    $stmt_equipo3 = $conn->prepare("INSERT INTO equipo (usuario_id, referido_id, nivel) VALUES (?, ?, 3)");
                     $stmt_equipo3->bind_param("ii", $padre3_id, $user_id);
                     $stmt_equipo3->execute();
                     $stmt_equipo3->close();
