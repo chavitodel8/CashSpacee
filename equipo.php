@@ -357,6 +357,37 @@ closeConnection($conn);
         
         /* Responsive para Equipo */
         @media (max-width: 768px) {
+            /* Corregir navbar en móviles */
+            .navbar-user {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                width: 100%;
+                margin-top: 10px;
+            }
+            
+            .navbar-user .user-info {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .navbar-user .btn {
+                width: 100%;
+                text-align: center;
+                margin: 0;
+            }
+            
+            .navbar-content {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px 15px;
+            }
+            
+            .navbar {
+                height: auto;
+                min-height: 70px;
+            }
+            
             .share-card {
                 flex-direction: column;
                 align-items: flex-start;
