@@ -89,7 +89,7 @@ $user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 // Verificar inversión mínima de 100 Bs
-$stmt = $conn->prepare("SELECT COALESCE(SUM(monto_inversion), 0) as total_inversion FROM inversiones WHERE usuario_id = ? AND estado = 'activa'");
+$stmt = $conn->prepare("SELECT COALESCE(SUM(monto_invertido), 0) as total_inversion FROM inversiones WHERE usuario_id = ? AND estado = 'activa'");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $inversion_result = $stmt->get_result()->fetch_assoc();
