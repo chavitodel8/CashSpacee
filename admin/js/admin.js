@@ -2,20 +2,19 @@
 
 // Función auxiliar para obtener la ruta correcta de la API
 function getApiUrl(endpoint) {
-    // Obtener la ruta base desde el pathname actual
+    // Usar ruta relativa simple que funciona en cualquier entorno
+    // Si estamos en admin/index.php, ../api/endpoint nos lleva a admin/api/endpoint
+    // Pero mejor usar ruta relativa desde la raíz del admin
     const pathname = window.location.pathname;
-    let basePath = '';
     
-    // Si estamos en /CashSpace/admin/... extraer hasta /admin
-    const adminIndex = pathname.indexOf('/admin/');
-    if (adminIndex !== -1) {
-        basePath = pathname.substring(0, adminIndex + 7); // '/CashSpace/admin'
+    // Detectar si estamos en una subcarpeta admin
+    if (pathname.includes('/admin/')) {
+        // Estamos en admin, usar ruta relativa
+        return 'api/' + endpoint;
     } else {
-        // Fallback a ruta absoluta
-        basePath = '/CashSpace/admin';
+        // Fallback: ruta absoluta desde la raíz
+        return '/admin/api/' + endpoint;
     }
-    
-    return basePath + '/api/' + endpoint;
 }
 
 // Aprobar recarga
