@@ -1,0 +1,12 @@
+# Versión simplificada del .htaccess si sigues teniendo problemas
+# Puedes renombrar este archivo a .htaccess si la versión principal no funciona
+
+# Prevenir listado de directorios
+Options -Indexes
+
+# Protección básica de archivos SQL
+<FilesMatch "\.sql$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+

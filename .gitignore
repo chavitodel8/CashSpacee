@@ -1,0 +1,65 @@
+# CashSpace - Archivos a ignorar en Git
+
+# Archivos de configuración local
+config/database.php
+.env
+.env.local
+.env.production
+
+# Logs
+logs/
+*.log
+error.log
+access.log
+
+# Archivos temporales
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de sistema
+.htaccess.local
+
+# Archivos de desarrollo
+test.php
+test_*.php
+*_test.php
+verificar_*.php
+
+# Scripts de desarrollo local
+MOVER_ARCHIVOS.bat
+iniciar_tunel*.bat
+*.bat
+
+# Archivos de instalación (ya ejecutados)
+install.php
+setup_password.php
+generate_admin_password.php
+
+# Archivos de backup
+*.bak
+*.backup
+*_backup.*
+
+# Node modules (si existe)
+node_modules/
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos de documentación de desarrollo (opcional - descomenta si no quieres subirlos)
+# INSTRUCCIONES_*.md
+# GUIA_*.md
+# RESUMEN_*.md
+# ESTADO_ACTUAL.txt
+# SOLUCION_*.txt
+# VERIFICAR_*.txt
+

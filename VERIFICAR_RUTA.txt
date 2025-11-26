@@ -1,0 +1,31 @@
+═══════════════════════════════════════════════════════
+    VERIFICAR RUTA DE ARCHIVOS
+═══════════════════════════════════════════════════════
+
+Los archivos deben estar en:
+C:\xampp\htdocs\CashSpace\
+
+Estructura debería ser:
+C:\xampp\htdocs\CashSpace\
+  ├── install.php          ← Este archivo
+  ├── index.php
+  ├── login.php
+  ├── database\
+  │   └── cashspace.sql
+  └── ...otros archivos
+
+═══════════════════════════════════════════════════════
+    PASOS PARA EJECUTAR INSTALL.PHP
+═══════════════════════════════════════════════════════
+
+1. Verifica que Apache esté corriendo en XAMPP
+2. Abre tu navegador
+3. Escribe en la barra de direcciones:
+   http://localhost/CashSpace/install.php
+4. Presiona Enter
+
+Si ves un error 404, significa que los archivos NO están en 
+la carpeta htdocs correcta.
+
+═══════════════════════════════════════════════════════
+

@@ -1,0 +1,43 @@
+═══════════════════════════════════════════════════════
+    SOLUCIÓN PARA ERROR 403 FORBIDDEN
+═══════════════════════════════════════════════════════
+
+Ya eliminé el archivo .htaccess que estaba bloqueando.
+
+AHORA INTENTA ESTO:
+
+1. REFRESCA LA PÁGINA (F5 o Ctrl+R) en tu navegador
+
+2. O intenta acceder directamente a:
+   http://localhost/CashSpace/install.php
+
+3. Si SIGUE saliendo el error, verifica:
+
+   a) Que los archivos estén en:
+      D:\XAMPP\htdocs\CashSpace\
+
+   b) Que Apache esté corriendo (ya lo está ✅)
+
+   c) Intenta acceder primero a:
+      http://localhost/CashSpace/
+      (debería mostrarte la página de login o un error de PHP)
+
+═══════════════════════════════════════════════════════
+    SI AÚN NO FUNCIONA:
+═══════════════════════════════════════════════════════
+
+1. Reinicia Apache en XAMPP:
+   - Clic en "Stop" en Apache
+   - Espera 2 segundos
+   - Clic en "Start" en Apache
+
+2. Verifica que NO haya un archivo .htaccess en:
+   D:\XAMPP\htdocs\
+   (carpeta padre)
+
+3. Intenta acceder a phpMyAdmin primero:
+   http://localhost/phpmyadmin
+   (Si esto funciona, Apache está bien)
+
+═══════════════════════════════════════════════════════
+

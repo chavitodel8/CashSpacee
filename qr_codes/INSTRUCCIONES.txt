@@ -1,0 +1,25 @@
+INSTRUCCIONES PARA AGREGAR CÓDIGOS QR
+=====================================
+
+1. Coloca tus imágenes QR en esta carpeta (qr_codes/)
+
+2. Nombra los archivos así:
+   - qr_100.png   (para 100 Bs)
+   - qr_200.png   (para 200 Bs)
+   - qr_500.png   (para 500 Bs)
+   - qr_1000.png  (para 1000 Bs)
+   - qr_2000.png  (para 2000 Bs)
+   - qr_5000.png  (para 5000 Bs)
+   - qr_10000.png (para 10000 Bs)
+
+3. Formatos soportados: PNG, JPG, JPEG
+
+4. Ejecuta el script de procesamiento:
+   http://localhost/CashSpace/scripts/procesar_qrs.php?pass=qr2024secure
+
+5. El script convertirá automáticamente las imágenes a base64 y actualizará
+   el archivo config/qr_codes.php
+
+6. Una vez procesados todos los QRs, elimina el script procesar_qrs.php
+   por seguridad.
+

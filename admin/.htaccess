@@ -1,0 +1,12 @@
+# Habilitar reescritura de URL
+RewriteEngine On
+
+# Si se accede a admin/ (sin index.php), redirigir a index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^$ index.php [L]
+
+# Si se accede a admin sin / al final, agregar /
+RewriteCond %{REQUEST_URI} ^/CashSpace/admin$
+RewriteRule ^(.*)$ /CashSpace/admin/ [R=301,L]
+
