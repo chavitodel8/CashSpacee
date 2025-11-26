@@ -177,5 +177,3 @@ function logoutUser() {
     session_destroy();
     return ['success' => true, 'message' => 'Sesión cerrada exitosamente'];
 }
-?>
-

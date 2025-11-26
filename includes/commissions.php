@@ -118,5 +118,3 @@ function procesarComisionRecarga($conn, $usuario_id, $monto_recarga, $recarga_id
         'message' => 'Comisión procesada exitosamente'
     ];
 }
-?>
-

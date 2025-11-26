@@ -269,5 +269,3 @@ function updateDailyGains($user_id) {
     closeConnection($conn);
     return $total_ganancia;
 }
-?>
-
