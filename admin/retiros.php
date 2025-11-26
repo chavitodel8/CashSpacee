@@ -34,9 +34,10 @@ if ($filtro_estado !== 'todos') {
 }
 
 // Obtener retiros
-$query = "SELECT r.*, u.telefono, u.nombre, u.nombre_titular 
+$query = "SELECT r.*, u.telefono, u.nombre, cb.nombre_titular 
           FROM retiros r 
           JOIN users u ON r.usuario_id = u.id 
+          LEFT JOIN cuenta_bancaria cb ON u.id = cb.usuario_id
           $query_where 
           ORDER BY r.fecha_solicitud DESC";
 $result = $conn->query($query);

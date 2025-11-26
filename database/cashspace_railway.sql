@@ -185,7 +185,10 @@ CREATE TABLE IF NOT EXISTS avisos (
     estado ENUM('activo', 'inactivo') DEFAULT 'activo',
     fecha_inicio DATETIME DEFAULT CURRENT_TIMESTAMP,
     fecha_fin DATETIME NULL,
+    admin_id INT,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL,
     INDEX idx_estado_fechas (estado, fecha_inicio, fecha_fin)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
