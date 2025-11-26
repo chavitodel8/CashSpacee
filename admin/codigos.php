@@ -65,35 +65,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_codigo'])) {
                 // Generar un solo código
                 $codigo = generateUniqueCode(12);
                 
-                // El monto será aleatorio (1-50 Bs) al canjear, así que no lo guardamos
-                // Usamos 0 como placeholder ya que el monto real será aleatorio
-                $monto_placeholder = 0;
+                // El monto será aleatorio (1-50 Bs) al canjear, así que no lo guardamos en la tabla
+                // Verificar si la columna monto existe antes de intentar insertarla
+                $check_monto = $conn->query("SHOW COLUMNS FROM codigos_promocionales LIKE 'monto'");
+                $has_monto_column = $check_monto->num_rows > 0;
+                $check_monto->close();
                 
                 if (!empty($fecha_expiracion)) {
-                    $stmt = $conn->prepare("INSERT INTO codigos_promocionales (codigo, monto, limite_activaciones, activaciones_usadas, fecha_expiracion) VALUES (?, ?, ?, 0, ?)");
-                    if (!$stmt) {
-                        $error = "Error al preparar la consulta: " . $conn->error;
-                    } else {
-                        $stmt->bind_param("sdis", $codigo, $monto_placeholder, $limite_activaciones, $fecha_expiracion);
-                        if ($stmt->execute()) {
-                            $mensaje = "Código promocional creado exitosamente: <strong>{$codigo}</strong><br>Límite de activaciones: {$limite_activaciones}<br>El monto será aleatorio entre 1 y 50 Bs cada vez que se canjee.";
+                    if ($has_monto_column) {
+                        // Si la columna existe, insertarla con 0 (no se usará)
+                        $stmt = $conn->prepare("INSERT INTO codigos_promocionales (codigo, monto, limite_activaciones, activaciones_usadas, fecha_expiracion) VALUES (?, 0, ?, 0, ?)");
+                        if (!$stmt) {
+                            $error = "Error al preparar la consulta: " . $conn->error;
                         } else {
-                            $error = "Error al crear el código: " . $stmt->error;
+                            $stmt->bind_param("sis", $codigo, $limite_activaciones, $fecha_expiracion);
+                            if ($stmt->execute()) {
+                                $mensaje = "Código promocional creado exitosamente: <strong>{$codigo}</strong><br>Límite de activaciones: {$limite_activaciones}<br>El monto será aleatorio entre 1 y 50 Bs cada vez que se canjee.";
+                            } else {
+                                $error = "Error al crear el código: " . $stmt->error;
+                            }
+                            $stmt->close();
                         }
-                        $stmt->close();
+                    } else {
+                        // Si no existe la columna monto, no la incluimos en el INSERT
+                        $stmt = $conn->prepare("INSERT INTO codigos_promocionales (codigo, limite_activaciones, activaciones_usadas, fecha_expiracion) VALUES (?, ?, 0, ?)");
+                        if (!$stmt) {
+                            $error = "Error al preparar la consulta: " . $conn->error;
+                        } else {
+                            $stmt->bind_param("sis", $codigo, $limite_activaciones, $fecha_expiracion);
+                            if ($stmt->execute()) {
+                                $mensaje = "Código promocional creado exitosamente: <strong>{$codigo}</strong><br>Límite de activaciones: {$limite_activaciones}<br>El monto será aleatorio entre 1 y 50 Bs cada vez que se canjee.";
+                            } else {
+                                $error = "Error al crear el código: " . $stmt->error;
+                            }
+                            $stmt->close();
+                        }
                     }
                 } else {
-                    $stmt = $conn->prepare("INSERT INTO codigos_promocionales (codigo, monto, limite_activaciones, activaciones_usadas) VALUES (?, ?, ?, 0)");
-                    if (!$stmt) {
-                        $error = "Error al preparar la consulta: " . $conn->error;
-                    } else {
-                        $stmt->bind_param("sdi", $codigo, $monto_placeholder, $limite_activaciones);
-                        if ($stmt->execute()) {
-                            $mensaje = "Código promocional creado exitosamente: <strong>{$codigo}</strong><br>Límite de activaciones: {$limite_activaciones}<br>El monto será aleatorio entre 1 y 50 Bs cada vez que se canjee.";
+                    if ($has_monto_column) {
+                        // Si la columna existe, insertarla con 0 (no se usará)
+                        $stmt = $conn->prepare("INSERT INTO codigos_promocionales (codigo, monto, limite_activaciones, activaciones_usadas) VALUES (?, 0, ?, 0)");
+                        if (!$stmt) {
+                            $error = "Error al preparar la consulta: " . $conn->error;
                         } else {
-                            $error = "Error al crear el código: " . $stmt->error;
+                            $stmt->bind_param("si", $codigo, $limite_activaciones);
+                            if ($stmt->execute()) {
+                                $mensaje = "Código promocional creado exitosamente: <strong>{$codigo}</strong><br>Límite de activaciones: {$limite_activaciones}<br>El monto será aleatorio entre 1 y 50 Bs cada vez que se canjee.";
+                            } else {
+                                $error = "Error al crear el código: " . $stmt->error;
+                            }
+                            $stmt->close();
                         }
-                        $stmt->close();
+                    } else {
+                        // Si no existe la columna monto, no la incluimos en el INSERT
+                        $stmt = $conn->prepare("INSERT INTO codigos_promocionales (codigo, limite_activaciones, activaciones_usadas) VALUES (?, ?, 0)");
+                        if (!$stmt) {
+                            $error = "Error al preparar la consulta: " . $conn->error;
+                        } else {
+                            $stmt->bind_param("si", $codigo, $limite_activaciones);
+                            if ($stmt->execute()) {
+                                $mensaje = "Código promocional creado exitosamente: <strong>{$codigo}</strong><br>Límite de activaciones: {$limite_activaciones}<br>El monto será aleatorio entre 1 y 50 Bs cada vez que se canjee.";
+                            } else {
+                                $error = "Error al crear el código: " . $stmt->error;
+                            }
+                            $stmt->close();
+                        }
                     }
                 }
             }
