@@ -74,55 +74,64 @@ $actualizados = [];
 $errores = [];
 
 foreach ($config_planes as $nombre_plan => $config) {
-    // Obtener el plan por nombre
-    $stmt = $conn->prepare("SELECT id, precio_inversion, limite_inversion FROM tipos_inversion WHERE nombre = ? AND estado = 'activo' LIMIT 1");
+    // Obtener TODOS los planes con este nombre (puede haber duplicados)
+    $stmt = $conn->prepare("SELECT id, precio_inversion, limite_inversion FROM tipos_inversion WHERE nombre = ? AND estado = 'activo'");
     $stmt->bind_param("s", $nombre_plan);
     $stmt->execute();
-    $plan = $stmt->get_result()->fetch_assoc();
+    $planes = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
 
-    if (!$plan) {
-        $errores[] = "No se encontró el plan '{$nombre_plan}' activo.";
+    if (empty($planes)) {
+        $errores[] = "No se encontró ningún plan '{$nombre_plan}' activo.";
         continue;
     }
 
-    $precio       = (float)$plan['precio_inversion'];
     $duracion     = (int)$config['duracion_dias'];
     $limite_nuevo = $config['limite_inversion'];
 
-    if ($duracion <= 0 || $precio <= 0) {
-        $errores[] = "Datos inválidos para '{$nombre_plan}' (precio: {$precio}, duración: {$duracion}).";
-        continue;
-    }
+    // Actualizar TODOS los registros con este nombre
+    foreach ($planes as $plan) {
+        $precio = (float)$plan['precio_inversion'];
 
-    // Calcular ganancias para que el total sea el TRIPLE de la inversión
-    $ganancia_total   = 3 * $precio;
-    $ganancia_diaria  = round($ganancia_total / $duracion, 2);
-    $ganancia_mensual = round($ganancia_diaria * 30, 2);
+        if ($duracion <= 0 || $precio <= 0) {
+            $errores[] = "Datos inválidos para '{$nombre_plan}' ID {$plan['id']} (precio: {$precio}, duración: {$duracion}).";
+            continue;
+        }
 
-    if ($limite_nuevo === null) {
-        // Mantener límite actual
-        $stmt = $conn->prepare("UPDATE tipos_inversion SET ganancia_diaria = ?, ganancia_mensual = ?, duracion_dias = ? WHERE id = ?");
-        $stmt->bind_param("ddii", $ganancia_diaria, $ganancia_mensual, $duracion, $plan['id']);
-    } else {
-        // Actualizar también el límite
-        $stmt = $conn->prepare("UPDATE tipos_inversion SET ganancia_diaria = ?, ganancia_mensual = ?, duracion_dias = ?, limite_inversion = ? WHERE id = ?");
-        $stmt->bind_param("ddiii", $ganancia_diaria, $ganancia_mensual, $duracion, $limite_nuevo, $plan['id']);
-    }
+        // Calcular ganancias para que el total sea el TRIPLE de la inversión
+        $ganancia_total   = 3 * $precio;
+        $ganancia_diaria  = round($ganancia_total / $duracion, 2);
+        $ganancia_mensual = round($ganancia_diaria * 30, 2);
 
-    if ($stmt->execute()) {
-        $actualizados[] = [
-            'nombre'           => $nombre_plan,
-            'precio'           => $precio,
-            'duracion_dias'    => $duracion,
-            'ganancia_diaria'  => $ganancia_diaria,
-            'ganancia_mensual' => $ganancia_mensual,
-            'limite_nuevo'     => $limite_nuevo ?? $plan['limite_inversion'],
-        ];
-    } else {
-        $errores[] = "Error al actualizar '{$nombre_plan}': " . $stmt->error;
+        if ($limite_nuevo === null) {
+            // Mantener límite actual
+            $stmt = $conn->prepare("UPDATE tipos_inversion SET ganancia_diaria = ?, ganancia_mensual = ?, duracion_dias = ? WHERE id = ?");
+            $stmt->bind_param("ddii", $ganancia_diaria, $ganancia_mensual, $duracion, $plan['id']);
+        } else {
+            // Actualizar también el límite
+            $stmt = $conn->prepare("UPDATE tipos_inversion SET ganancia_diaria = ?, ganancia_mensual = ?, duracion_dias = ?, limite_inversion = ? WHERE id = ?");
+            $stmt->bind_param("ddiii", $ganancia_diaria, $ganancia_mensual, $duracion, $limite_nuevo, $plan['id']);
+        }
+
+        if ($stmt->execute()) {
+            // Solo agregar una vez por nombre (no por cada duplicado)
+            if (!isset($actualizados[$nombre_plan])) {
+                $actualizados[$nombre_plan] = [
+                    'nombre'           => $nombre_plan,
+                    'precio'           => $precio,
+                    'duracion_dias'    => $duracion,
+                    'ganancia_diaria'  => $ganancia_diaria,
+                    'ganancia_mensual' => $ganancia_mensual,
+                    'limite_nuevo'     => $limite_nuevo ?? $plan['limite_inversion'],
+                    'registros_actualizados' => 0,
+                ];
+            }
+            $actualizados[$nombre_plan]['registros_actualizados']++;
+        } else {
+            $errores[] = "Error al actualizar '{$nombre_plan}' ID {$plan['id']}: " . $stmt->error;
+        }
+        $stmt->close();
     }
-    $stmt->close();
 }
 
 // Salida bonita en HTML (como los otros scripts de configuración)
@@ -154,15 +163,17 @@ if (!empty($actualizados)) {
     echo "</div>";
 
     echo "<table>";
-    echo "<tr><th>Nombre</th><th>Inversión</th><th>Duración (días)</th><th>Ganancia/Día</th><th>Ganancia/Mes</th><th>Límite</th></tr>";
+    echo "<tr><th>Nombre</th><th>Inversión</th><th>Duración (días)</th><th>Ganancia/Día</th><th>Ganancia/Mes</th><th>Límite</th><th>Registros</th></tr>";
     foreach ($actualizados as $p) {
+        $registros_text = $p['registros_actualizados'] > 1 ? " ({$p['registros_actualizados']} registros)" : "";
         echo "<tr>";
-        echo "<td><strong>{$p['nombre']}</strong></td>";
+        echo "<td><strong>{$p['nombre']}</strong>{$registros_text}</td>";
         echo "<td>" . number_format($p['precio'], 2, ',', '.') . " Bs</td>";
         echo "<td>{$p['duracion_dias']}</td>";
         echo "<td style='color:#10b981;font-weight:600;'>+" . number_format($p['ganancia_diaria'], 2, ',', '.') . " Bs</td>";
         echo "<td style='color:#059669;font-weight:600;'>" . number_format($p['ganancia_mensual'], 2, ',', '.') . " Bs</td>";
         echo "<td>{$p['limite_nuevo']}</td>";
+        echo "<td>{$p['registros_actualizados']}</td>";
         echo "</tr>";
     }
     echo "</table>";
@@ -176,6 +187,23 @@ if (!empty($errores)) {
     }
     echo "</ul></div>";
 }
+
+// Mostrar diagnóstico: qué planes hay en la BD
+echo "<h2 style='margin-top:30px;'>🔍 Diagnóstico: Planes en la Base de Datos</h2>";
+$result_diag = $conn->query("SELECT id, nombre, precio_inversion, ganancia_diaria, duracion_dias, limite_inversion, estado FROM tipos_inversion WHERE estado = 'activo' ORDER BY precio_inversion ASC");
+echo "<table>";
+echo "<tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Ganancia/Día</th><th>Duración</th><th>Límite</th></tr>";
+while ($row = $result_diag->fetch_assoc()) {
+    echo "<tr>";
+    echo "<td>{$row['id']}</td>";
+    echo "<td><strong>{$row['nombre']}</strong></td>";
+    echo "<td>" . number_format($row['precio_inversion'], 2, ',', '.') . " Bs</td>";
+    echo "<td>" . number_format($row['ganancia_diaria'], 2, ',', '.') . " Bs</td>";
+    echo "<td>{$row['duracion_dias']} días</td>";
+    echo "<td>{$row['limite_inversion']}</td>";
+    echo "</tr>";
+}
+echo "</table>";
 
 echo "<p style='margin-top:20px;'><a href='index.php' style='color:#044990;text-decoration:none;font-weight:600;'>← Volver al inicio</a></p>";
 echo "</div>";
