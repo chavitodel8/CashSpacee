@@ -1,5 +1,6 @@
 <?php
 require_once 'config/config.php';
+require_once 'includes/investment.php';
 requireLogin();
 
 $conn = getConnection();
@@ -534,8 +535,10 @@ closeConnection($conn);
                         <div class="investment-item">
                             <!-- Imagen del producto -->
                             <div class="investment-image-wrapper">
-                                <?php if (!empty($inversion['tipo_imagen'])): ?>
-                                    <img src="<?php echo htmlspecialchars($inversion['tipo_imagen']); ?>" alt="<?php echo htmlspecialchars($inversion['tipo_inversion']); ?>" class="investment-image">
+                                <?php 
+                                $imagen_path = getInvestmentImagePath($inversion['tipo_inversion']);
+                                if ($imagen_path): ?>
+                                    <img src="<?php echo htmlspecialchars($imagen_path); ?>" alt="<?php echo htmlspecialchars($inversion['tipo_inversion']); ?>" class="investment-image">
                                 <?php else: ?>
                                     <div class="investment-image-placeholder">💎</div>
                                 <?php endif; ?>
