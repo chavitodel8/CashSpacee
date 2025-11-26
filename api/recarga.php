@@ -62,26 +62,20 @@ if ($metodo_pago === 'yape') {
     // Si no se enviaron los datos de Yape desde el frontend, obtenerlos de la cuenta bancaria configurada
     if (empty($yape_numero) || empty($yape_nombre)) {
         $conn_temp = getConnection();
-        // Intentar obtener de la tabla cuenta_bancaria primero
-        $stmt_temp = $conn_temp->prepare("SELECT cuenta_bancaria, nombre_titular FROM cuenta_bancaria WHERE usuario_id = ?");
+        // Intentar obtener de la tabla cuenta_bancaria primero (columna correcta: numero_cuenta)
+        $stmt_temp = $conn_temp->prepare("SELECT numero_cuenta, nombre_titular FROM cuenta_bancaria WHERE usuario_id = ?");
         $stmt_temp->bind_param("i", $_SESSION['user_id']);
         $stmt_temp->execute();
         $user_bank = $stmt_temp->get_result()->fetch_assoc();
         $stmt_temp->close();
         
-        // Si no hay en cuenta_bancaria, intentar en users (compatibilidad)
-        if (!$user_bank || empty($user_bank['cuenta_bancaria'])) {
-            $stmt_temp = $conn_temp->prepare("SELECT cuenta_bancaria, nombre_titular FROM users WHERE id = ?");
-            $stmt_temp->bind_param("i", $_SESSION['user_id']);
-            $stmt_temp->execute();
-            $user_bank = $stmt_temp->get_result()->fetch_assoc();
-            $stmt_temp->close();
-        }
+        // Si no hay en cuenta_bancaria, los datos deben venir del frontend
+        // (ya no intentamos obtener de users porque esa columna se movió a cuenta_bancaria)
         
         closeConnection($conn_temp);
         
-        if ($user_bank && !empty($user_bank['cuenta_bancaria'])) {
-            $yape_numero = $user_bank['cuenta_bancaria'];
+        if ($user_bank && !empty($user_bank['numero_cuenta'])) {
+            $yape_numero = $user_bank['numero_cuenta'];
             $yape_nombre = $user_bank['nombre_titular'] ?? '';
         }
     }
