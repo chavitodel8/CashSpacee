@@ -47,10 +47,13 @@ if ($ya_recibida) {
 }
 
 // Obtener inversión total del equipo nivel 1
+// Usamos la tabla 'equipo' (singular) y la estructura actual:
+// equipo.usuario_id  -> usuario que invita (líder)
+// equipo.referido_id -> usuario invitado (miembro del equipo)
 $stmt = $conn->prepare("SELECT COALESCE(SUM(u.saldo_invertido), 0) as inversion_total
-                       FROM equipos e
-                       JOIN users u ON e.usuario_referido_id = u.id
-                       WHERE e.usuario_padre_id = ? AND e.nivel = 1");
+                       FROM equipo e
+                       JOIN users u ON e.referido_id = u.id
+                       WHERE e.usuario_id = ? AND e.nivel = 1");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();

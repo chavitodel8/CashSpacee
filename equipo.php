@@ -39,17 +39,20 @@ for ($nivel = 1; $nivel <= 3; $nivel++) {
     $contribucion = $result->fetch_assoc()['contribucion'];
     $stmt->close();
     
-    // Tasa de comisión según nivel
+    // Tasa de comisión según nivel (porcentaje de comisión por las inversiones del equipo)
     $tasa_comision = 0;
     switch($nivel) {
         case 1:
-            $tasa_comision = 33;
+            // Nivel 1: 8%
+            $tasa_comision = 8;
             break;
         case 2:
-            $tasa_comision = 1;
+            // Nivel 2: 2%
+            $tasa_comision = 2;
             break;
         case 3:
-            $tasa_comision = 1;
+            // Nivel 3: 0.8%
+            $tasa_comision = 0.8;
             break;
     }
     

@@ -184,8 +184,95 @@ function makeInvestment($user_id, $tipo_inversion_id, $monto) {
         $stmt->bind_param("isdidd", $user_id, $monto, $descripcion, $inversion_id, $saldo_anterior, $new_balance['saldo_disponible']);
         $stmt->execute();
         $stmt->close();
-        
-        // Confirmar transacción
+
+        /**
+         * Comisiones por inversión del equipo
+         *
+         * Niveles y porcentajes:
+         *  - Nivel 1: 8%
+         *  - Nivel 2: 2%
+         *  - Nivel 3: 0.8%
+         *
+         * La tabla `equipo` tiene la forma:
+         *  - usuario_id  -> usuario que invita (upline)
+         *  - referido_id -> usuario invitado (downline)
+         *  - nivel       -> 1, 2 o 3
+         */
+
+        // Porcentajes de comisión por nivel
+        $porcentajes_nivel = [
+            1 => 0.08,   // 8%
+            2 => 0.02,   // 2%
+            3 => 0.008,  // 0.8%
+        ];
+
+        // Buscar la cadena de equipo (uplines) de este usuario hasta 3 niveles
+        $stmt = $conn->prepare("SELECT usuario_id, nivel FROM equipo WHERE referido_id = ? AND nivel IN (1, 2, 3)");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $resultado_equipo = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        foreach ($resultado_equipo as $miembro) {
+            $upline_id = (int)$miembro['usuario_id'];
+            $nivel     = (int)$miembro['nivel'];
+
+            if (!isset($porcentajes_nivel[$nivel])) {
+                continue;
+            }
+
+            $porcentaje = $porcentajes_nivel[$nivel];
+            $comision   = round($monto * $porcentaje, 2);
+
+            if ($comision <= 0) {
+                continue;
+            }
+
+            // Obtener saldo actual del upline (con bloqueo de fila)
+            $stmt = $conn->prepare("SELECT saldo_disponible FROM users WHERE id = ? FOR UPDATE");
+            $stmt->bind_param("i", $upline_id);
+            $stmt->execute();
+            $upline = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!$upline) {
+                continue;
+            }
+
+            $saldo_anterior_upline = (float)$upline['saldo_disponible'];
+
+            // Actualizar saldo del upline
+            $stmt = $conn->prepare("UPDATE users SET saldo_disponible = saldo_disponible + ?, saldo = saldo + ? WHERE id = ?");
+            $stmt->bind_param("ddi", $comision, $comision, $upline_id);
+            $stmt->execute();
+            $stmt->close();
+
+            // Obtener nuevo saldo del upline
+            $stmt = $conn->prepare("SELECT saldo_disponible FROM users WHERE id = ?");
+            $stmt->bind_param("i", $upline_id);
+            $stmt->execute();
+            $nuevo = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            $saldo_nuevo_upline = (float)$nuevo['saldo_disponible'];
+
+            // Registrar transacción de comisión
+            $stmt = $conn->prepare("INSERT INTO transacciones (usuario_id, tipo, monto, descripcion, referencia_id, saldo_anterior, saldo_nuevo) VALUES (?, 'comision', ?, ?, ?, ?, ?)");
+            $desc_comision = "Comisión de equipo nivel {$nivel} por inversión de " . formatCurrency($monto) . " del usuario #{$user_id} en el plan " . $tipo['nombre'];
+            $stmt->bind_param("isdiid", $upline_id, $comision, $desc_comision, $inversion_id, $saldo_anterior_upline, $saldo_nuevo_upline);
+            $stmt->execute();
+            $stmt->close();
+
+            // Crear notificación para el upline
+            $titulo_notif = "Comisión de equipo nivel {$nivel}";
+            $mensaje_notif = "Has recibido " . formatCurrency($comision) . " de comisión por la inversión de tu equipo (nivel {$nivel}).";
+            $stmt = $conn->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES (?, ?, ?, 'success')");
+            $stmt->bind_param("iss", $upline_id, $titulo_notif, $mensaje_notif);
+            $stmt->execute();
+            $stmt->close();
+        }
+
+        // Confirmar transacción (inversión + comisiones de equipo)
         $conn->commit();
         closeConnection($conn);
         
