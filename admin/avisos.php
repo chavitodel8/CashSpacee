@@ -256,7 +256,8 @@ closeConnection($conn);
             messageDiv.innerHTML = '<div style="padding: 15px; background: #fef3c7; border-radius: 10px; color: #92400e;"><i class="fas fa-spinner fa-spin"></i> Guardando...</div>';
             
             try {
-                const url = avisoId ? '/CashSpace/admin/api/avisos.php?action=update' : '/CashSpace/admin/api/avisos.php?action=create';
+                // Usar ruta relativa para que funcione tanto en localhost como en producción (Railway)
+                const url = avisoId ? 'api/avisos.php?action=update' : 'api/avisos.php?action=create';
                 const response = await fetch(url, {
                     method: 'POST',
                     body: formData
@@ -302,7 +303,7 @@ closeConnection($conn);
             }
             
             try {
-                const response = await fetch('/CashSpace/admin/api/avisos.php?action=toggle', {
+                const response = await fetch('api/avisos.php?action=toggle', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -330,7 +331,7 @@ closeConnection($conn);
             }
             
             try {
-                const response = await fetch('/CashSpace/admin/api/avisos.php?action=delete', {
+                const response = await fetch('api/avisos.php?action=delete', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
