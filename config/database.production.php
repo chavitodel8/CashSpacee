@@ -54,5 +54,3 @@ function closeConnection($conn) {
         $conn->close();
     }
 }
-?>
-
