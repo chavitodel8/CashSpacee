@@ -53,7 +53,16 @@ function getAvailableInvestmentTypes() {
         'Inversión Ultimate'
     ];
     $placeholders = implode(',', array_fill(0, count($nombres_planes), '?'));
-    $stmt = $conn->prepare("SELECT * FROM tipos_inversion WHERE estado = 'activo' AND nombre IN ($placeholders) ORDER BY precio_inversion ASC");
+    // Obtener solo un registro por nombre (el más reciente por ID) para evitar duplicados
+    $stmt = $conn->prepare("SELECT t1.* FROM tipos_inversion t1 
+                            INNER JOIN (
+                                SELECT nombre, MAX(id) as max_id 
+                                FROM tipos_inversion 
+                                WHERE estado = 'activo' AND nombre IN ($placeholders) 
+                                GROUP BY nombre
+                            ) t2 ON t1.nombre = t2.nombre AND t1.id = t2.max_id 
+                            WHERE t1.estado = 'activo' 
+                            ORDER BY t1.precio_inversion ASC");
     $types = str_repeat('s', count($nombres_planes));
     $stmt->bind_param($types, ...$nombres_planes);
     $stmt->execute();
