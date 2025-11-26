@@ -112,6 +112,43 @@ closeConnection($conn);
         body {
             background: var(--light-color);
         }
+        
+        /* Navbar responsivo para todos los dispositivos */
+        .navbar {
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .navbar-content {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 15px 20px;
+        }
+        
+        .navbar-user {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .navbar-user .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .navbar-user .btn {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
         .share-card {
             background: var(--white);
             border-radius: 12px;
@@ -355,37 +392,112 @@ closeConnection($conn);
             cursor: not-allowed;
         }
         
-        /* Responsive para Equipo */
-        @media (max-width: 768px) {
-            /* Corregir navbar en móviles */
+        /* Responsive para Equipo - Tablet y móvil */
+        @media (max-width: 1024px) {
+            .navbar-content {
+                flex-direction: row;
+                align-items: center;
+                padding: 12px 15px;
+            }
+            
             .navbar-user {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-                width: 100%;
-                margin-top: 10px;
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+                width: auto;
+                margin-top: 0;
             }
             
             .navbar-user .user-info {
-                width: 100%;
-                margin-bottom: 5px;
+                width: auto;
+                margin-bottom: 0;
             }
             
             .navbar-user .btn {
-                width: 100%;
-                text-align: center;
-                margin: 0;
+                width: auto;
+                padding: 8px 14px;
+                font-size: 13px;
             }
-            
+        }
+        
+        @media (max-width: 768px) {
             .navbar-content {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: stretch;
                 padding: 10px 15px;
+                gap: 12px;
+            }
+            
+            .navbar-brand {
+                width: 100%;
+                text-align: center;
+                margin-bottom: 0;
+            }
+            
+            .navbar-user {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                width: 100%;
+                margin-top: 0;
+            }
+            
+            .navbar-user .user-info {
+                flex: 1;
+                min-width: 0;
+                margin-bottom: 0;
+            }
+            
+            .navbar-user .btn {
+                width: auto;
+                min-width: 80px;
+                padding: 8px 12px;
+                font-size: 12px;
+                text-align: center;
             }
             
             .navbar {
                 height: auto;
-                min-height: 70px;
+                min-height: auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .navbar-content {
+                padding: 8px 12px;
+                gap: 10px;
+            }
+            
+            .navbar-user {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            
+            .navbar-user .user-info {
+                width: 100%;
+                order: 1;
+            }
+            
+            .navbar-user .btn {
+                flex: 1;
+                min-width: calc(50% - 3px);
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+            
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+            
+            .user-info > div {
+                font-size: 13px;
+            }
+            
+            .user-balance {
+                font-size: 12px;
             }
             
             .share-card {
