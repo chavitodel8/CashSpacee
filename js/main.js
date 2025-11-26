@@ -406,7 +406,24 @@ async function submitRetiro(event) {
             body: formData
         });
         
-        const data = await response.json();
+        // Verificar si la respuesta es OK
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error HTTP:', response.status);
+            console.error('Respuesta del servidor:', errorText);
+            throw new Error(`Error del servidor (${response.status}): ${errorText.substring(0, 100)}`);
+        }
+        
+        // Intentar parsear como JSON
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('Error al parsear JSON:', e);
+            console.error('Texto recibido:', text);
+            throw new Error('El servidor no devolvió una respuesta válida. Revisa la consola (F12) para más detalles.');
+        }
         
         if (data.success) {
             messageDiv.innerHTML = `<div style="padding: 15px; background: #d1fae5; border-radius: 10px; color: #065f46;"><i class="fas fa-check-circle"></i> ${data.message}</div>`;
@@ -422,7 +439,7 @@ async function submitRetiro(event) {
             const textColor = isBlocked ? '#92400e' : '#991b1b';
             const icon = isBlocked ? 'fa-ban' : 'fa-exclamation-circle';
             
-            messageDiv.innerHTML = `<div style="padding: 15px; background: ${bgColor}; border-radius: 10px; color: ${textColor};"><i class="fas ${icon}"></i> ${data.message}</div>`;
+            messageDiv.innerHTML = `<div style="padding: 15px; background: ${bgColor}; border-radius: 10px; color: ${textColor};"><i class="fas ${icon}"></i> ${data.message || 'Error desconocido'}</div>`;
             
             // Si está bloqueado, hacer scroll al mensaje
             if (isBlocked) {
@@ -430,7 +447,8 @@ async function submitRetiro(event) {
             }
         }
     } catch (error) {
-        messageDiv.innerHTML = `<div style="padding: 15px; background: #fee2e2; border-radius: 10px; color: #991b1b;"><i class="fas fa-exclamation-circle"></i> Error al enviar la solicitud. Intenta nuevamente.</div>`;
+        console.error('Error completo al enviar retiro:', error);
+        messageDiv.innerHTML = `<div style="padding: 15px; background: #fee2e2; border-radius: 10px; color: #991b1b;"><i class="fas fa-exclamation-circle"></i> Error al enviar la solicitud: ${error.message}<br><small>Abre la consola (F12) para ver más detalles.</small></div>`;
     }
 }
 

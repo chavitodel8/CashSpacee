@@ -1,5 +1,11 @@
 <?php
+// Iniciar buffer de salida para capturar cualquier salida no deseada
+ob_start();
+
 require_once __DIR__ . '/../config/config.php';
+
+// Limpiar cualquier salida que haya ocurrido antes del header
+ob_clean();
 
 header('Content-Type: application/json');
 requireLogin();
