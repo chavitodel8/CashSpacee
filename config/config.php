@@ -80,5 +80,3 @@ function generateUniqueCode($length = 10) {
     }
     return $code;
 }
-?>
-
