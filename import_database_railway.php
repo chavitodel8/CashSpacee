@@ -228,7 +228,7 @@ if ($import_key !== $secret_key) {
             
             if (!$admin_exists) {
                 $admin_password = password_hash('admin123', PASSWORD_DEFAULT);
-                $admin_code = 'ADMIN' . strtoupper(substr(md5(time()), 0, 6));
+                $admin_code = 'ADMIN' . strtoupper(substr(md5(time()), 0, 5)); // Máximo 10 caracteres
                 $stmt = $conn->prepare("INSERT INTO users (telefono, password, codigo_invitacion, tipo_usuario, saldo_disponible, saldo) VALUES (?, ?, ?, 'admin', 10000.00, 10000.00)");
                 $admin_phone = 'admin';
                 $stmt->bind_param("sss", $admin_phone, $admin_password, $admin_code);
