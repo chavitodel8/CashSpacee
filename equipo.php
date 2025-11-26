@@ -510,6 +510,7 @@ closeConnection($conn);
                 <?php if (isAdmin()): ?>
                     <a href="admin/index.php" class="btn btn-outline">Admin</a>
                 <?php endif; ?>
+                <a href="index.php" class="btn btn-outline">Inicio</a>
                 <a href="logout.php" class="btn btn-danger">Salir</a>
             </div>
         </div>
