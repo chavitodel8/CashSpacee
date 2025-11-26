@@ -24,7 +24,12 @@ define('BASE_URL', $protocol . '://' . $host . $base_path);
 define('BASE_PATH', dirname(__DIR__));
 
 // Incluir configuración de base de datos
-require_once __DIR__ . '/database.php';
+// Intentar cargar database.php, si no existe usar database.production.php
+if (file_exists(__DIR__ . '/database.php')) {
+    require_once __DIR__ . '/database.php';
+} else {
+    require_once __DIR__ . '/database.production.php';
+}
 
 // Función para verificar si el usuario está autenticado
 function isLoggedIn() {
