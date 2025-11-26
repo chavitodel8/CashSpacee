@@ -247,8 +247,19 @@ closeConnection($conn);
         </div>
     </div>
 
-    <script src="../js/main.js"></script>
     <script src="js/admin.js"></script>
+    <script>
+        // Prevenir errores de extensiones del navegador
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+            // Ignorar errores de extensiones
+            window.addEventListener('error', function(e) {
+                if (e.message && e.message.includes('message channel')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        }
+    </script>
 </body>
 </html>
 
