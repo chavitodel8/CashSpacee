@@ -1,9 +1,10 @@
 [phases.setup]
-nixPkgs = ["php81", "php81Extensions.mysqli"]
+nixPkgs = ["php81", "php81Extensions.mysqli", "php81Extensions.pdo_mysql"]
 
 [phases.install]
-cmds = ["echo 'PHP with mysqli extension installed'"]
+cmds = [
+  "echo 'PHP with mysqli and pdo_mysql extensions installed'"
+]
 
 [start]
 cmd = "php -S 0.0.0.0:$PORT -t ."
-
